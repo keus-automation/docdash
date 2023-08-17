@@ -483,7 +483,7 @@ function buildNav(members) {
         return ret;
     }
     var defaultOrder = [
-        'Classes', 'Modules', 'Externals', 'Events', 'Namespaces', 'Mixins', 'Tutorials', 'Interfaces', 'Global'
+        'Classes', 'Modules',"rpcs","utilityFunctions","Types", 'Externals', 'Events', 'Namespaces', 'Mixins', 'Tutorials', 'Interfaces', 'Global',
     ];
     var order = docdash.sectionOrder || defaultOrder;
     var sections = {
@@ -495,6 +495,9 @@ function buildNav(members) {
         Mixins: buildMemberNav(members.mixins, 'Mixins', seen, linkto),
         Tutorials: buildMemberNav(members.tutorials, 'Tutorials', seenTutorials, linktoTutorial),
         Interfaces: buildMemberNav(members.interfaces, 'Interfaces', seen, linkto),
+        rpcs:buildMemberNav(members.rpcs,"RPC's",{},linkto),
+        utilityFunctions:buildMemberNav(members.utilityFunctions,"Utility Functions",{},linkto),
+        Types:buildMemberNav(members.types,'Types',{},linkto),
         Global: buildMemberNavGlobal()
     };
     order.forEach(member => nav += sections[member]);
@@ -502,6 +505,24 @@ function buildNav(members) {
     return nav;
 }
 
+function getMyCustomNavs(members){
+    members.functions=members.globals.filter((doclet)=>{
+        return (doclet.kind=="function")
+    })
+    members.rpcs=members.functions.filter((doclet)=>{
+        return doclet.meta.shortpath.split("/").map((entry)=>{return entry.toUpperCase()}).includes("request-handlers".toUpperCase())
+    })
+    members.utilityFunctions=members.functions.filter((doclet)=>{
+        return !(doclet.meta.shortpath.split("/").map((entry)=>{return entry.toUpperCase()}).includes("request-handlers".toUpperCase()))
+    })
+    members.types=members.globals.filter((doclet)=>{
+        return (doclet.kind=="typedef")
+    })
+    members.globals=members.globals.filter(doclet=>{
+        return ((doclet.kind!="function") && (doclet.kind!="typedef")) 
+    })
+    return members
+}
 /**
     @param {TAFFY} taffyData See <http://taffydb.com/>.
     @param {object} opts
@@ -730,9 +751,13 @@ exports.publish = function(taffyData, opts, tutorials) {
     view.tutoriallink = tutoriallink;
     view.htmlsafe = htmlsafe;
     view.outputSourceFiles = outputSourceFiles;
+    view.nav = buildNav(getMyCustomNavs(members));
 
     // once for all
-    view.nav = buildNav(members);
+    // for my custom template
+    
+    
+    
     attachModuleSymbols( find({ longname: {left: 'module:'} }), members.modules );
 
     // generate the pretty-printed source files first so other pages can link to them
@@ -799,7 +824,7 @@ exports.publish = function(taffyData, opts, tutorials) {
         }
     });
 
-    // TODO: move the tutorial functions to templateHelper.js
+    // T-90 move the tutorial functions to templateHelper.js
     function generateTutorial(title, tutorial, filename) {
         var tutorialData = {
             title: title,

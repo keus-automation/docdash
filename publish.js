@@ -510,10 +510,10 @@ function getMyCustomNavs(members){
         return (doclet.kind=="function")
     })
     members.rpcs=members.functions.filter((doclet)=>{
-        return doclet.meta.shortpath.split("/").map((entry)=>{return entry.toUpperCase()}).includes("request-handlers".toUpperCase())
+        return (doclet.meta.shortpath.split("/").map((entry)=>{return entry.toUpperCase()}).includes("request-handlers".toUpperCase()) && doclet.meta.filename=="index.ts")
     })
     members.utilityFunctions=members.functions.filter((doclet)=>{
-        return !(doclet.meta.shortpath.split("/").map((entry)=>{return entry.toUpperCase()}).includes("request-handlers".toUpperCase()))
+        return !(doclet.meta.shortpath.split("/").map((entry)=>{return entry.toUpperCase()}).includes("request-handlers".toUpperCase()) && doclet.meta.filename=="index.ts")
     })
     members.types=members.globals.filter((doclet)=>{
         return (doclet.kind=="typedef")
